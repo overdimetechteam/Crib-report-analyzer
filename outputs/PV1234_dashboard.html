@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Credit Risk Dashboard — ABC PRODUCTS (PVT) LTD</title>
+<style>
+
+  :root{
+    --ink:#12181f; --paper:#eef0ee; --card:#ffffff; --line:#dfe3e0; --muted:#5b6570;
+    --amber:#b7791f; --amber-bg:#fdf3df; --amber-line:#e8c988;
+    --green:#1f7a4d; --green-bg:#e9f6ef; --green-line:#a9d9bf;
+    --red:#a3291f; --red-bg:#fbe9e7; --red-line:#eeb7b0;
+    --navy:#1c2b3a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'SF Mono','Courier New',monospace;
+    -webkit-font-smoothing:antialiased;font-size:13px;}
+  .wrap{max-width:1180px;margin:16px auto;padding:0 12px;}
+  .serif{font-family:'Iowan Old Style','Georgia',serif;}
+
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px 14px;}
+  .panel-title{font-size:9.5px;text-transform:uppercase;letter-spacing:0.6px;
+    color:var(--muted);margin:0 0 8px;font-weight:700;}
+
+  .header{grid-column:span 12;border:1px solid var(--line);border-left:6px solid var(--ink);
+    padding:16px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .header .id-block .name{font-family:'Iowan Old Style','Georgia',serif;font-size:19px;font-weight:700;color:var(--ink);}
+  .header .id-block .meta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .header .decision-block{display:flex;align-items:center;gap:14px;}
+  .decision-badge{font-size:24px;font-weight:700;letter-spacing:0.4px;}
+  .risk-pill{font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:3px;color:#fff;white-space:nowrap;}
+
+  .kpi{grid-column:span 2;text-align:center;}
+  .kpi .label{font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:0.4px;margin-bottom:5px;}
+  .kpi .value{font-size:19px;font-weight:700;}
+  .kpi .sub{font-size:9.5px;color:var(--muted);margin-top:2px;}
+  .v-green{color:var(--green);} .v-amber{color:var(--amber);} .v-red{color:var(--red);} .v-ink{color:var(--ink);}
+
+  .chart-panel{grid-column:span 7;}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:110px;margin-top:6px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar{width:100%;border-radius:2px 2px 0 0;}
+  .bar-b1{background:#2e9e63;}
+  .bar-b2{background:var(--green);}
+  .bar-c1{background:var(--amber);}
+  .bar-d1{background:var(--red);}
+  .bar-label{font-size:8px;color:var(--muted);margin-top:4px;}
+  .bar-score{font-size:8.5px;color:var(--ink);font-weight:700;margin-bottom:2px;}
+  .legend{display:flex;gap:14px;margin-top:8px;font-size:10px;color:var(--muted);flex-wrap:wrap;}
+  .legend span.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle;}
+
+  .guarantor-track{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);}
+  .guarantor-track .track-label{font-size:9.5px;color:var(--red);font-weight:700;margin-bottom:4px;}
+  .guarantor-bars{display:flex;align-items:flex-end;gap:2px;height:40px;}
+  .g-bar{flex:1;background:var(--red);border-radius:1px 1px 0 0;opacity:0.85;}
+
+  .exposure-panel{grid-column:span 5;}
+  .exp-row{margin-bottom:9px;}
+  .exp-row .exp-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+  .exp-row .exp-label b{font-weight:700;}
+  .exp-bar-bg{background:#eef0ee;border-radius:3px;height:14px;overflow:hidden;}
+  .exp-bar-fill{height:100%;border-radius:3px;}
+  .exp-by-sector{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--muted);}
+  .exp-by-sector .sector-row{display:flex;justify-content:space-between;padding:2px 0;}
+
+  .table-panel{grid-column:span 12;}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  th{text-align:left;font-size:9.5px;text-transform:uppercase;color:var(--muted);
+    border-bottom:1px solid var(--ink);padding:4px 8px;letter-spacing:0.3px;}
+  td{padding:4px 8px;border-bottom:1px solid var(--line);}
+  tr.flag-row td{background:var(--red-bg);color:var(--red);font-weight:700;}
+  .pill{font-size:9.5px;padding:2px 7px;border-radius:3px;font-weight:700;display:inline-block;}
+  .pill-active{background:var(--green-bg);color:var(--green);}
+  .pill-written{background:var(--red-bg);color:var(--red);}
+  .pill-settled{background:#eef0ee;color:var(--muted);}
+
+  .flags-panel{grid-column:span 6;}
+  ul.flags{list-style:none;margin:0;padding:0;}
+  ul.flags li{font-size:11.5px;line-height:1.5;padding:4px 0 4px 20px;position:relative;}
+  ul.flags.red li::before{content:"\26A0";position:absolute;left:0;color:var(--red);}
+  ul.flags.good li::before{content:"\2713";position:absolute;left:0;color:var(--green);font-weight:700;}
+
+  .reco-panel{grid-column:span 12;background:#fafbf9;}
+  .reco-panel p{font-size:12.5px;line-height:1.5;margin:0 0 8px;font-family:'Iowan Old Style','Georgia',serif;}
+  .checklist{list-style:none;margin:0;padding:0;columns:2;column-gap:24px;}
+  .checklist li{font-size:11.5px;line-height:1.6;padding-left:18px;position:relative;break-inside:avoid;}
+  .checklist li::before{content:"\2610";position:absolute;left:0;color:var(--amber);}
+
+  .signoff-panel{grid-column:span 12;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .signoff-panel .field{font-size:10.5px;color:var(--muted);}
+  .signoff-panel .line{border-top:1px solid var(--ink);margin-top:24px;padding-top:3px;}
+
+  .footnote{grid-column:span 12;font-size:9.5px;color:var(--muted);padding:2px 4px;}
+
+  @media print{ body{background:#fff;} .panel{box-shadow:none;} }
+  @media (max-width:800px){
+    .kpi{grid-column:span 4;}
+    .chart-panel,.exposure-panel,.flags-panel{grid-column:span 12;}
+  }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="grid">
+
+  <div class="header" style="background:var(--red-bg);border-color:var(--red-line);border-left-color:var(--red);">
+    <div class="id-block">
+      <div class="name">ABC PRODUCTS (PVT) LTD</div>
+      <div class="meta">Reg. No PV1234 &nbsp;·&nbsp; Report date 17-Feb-2025 &nbsp;·&nbsp; Ref 1DF0-3BEE-08A9-42B8<br>
+      Purpose: Not specified in report &nbsp;·&nbsp; Facility requested: Not available in report</div>
+    </div>
+    <div class="decision-block">
+      <div class="decision-badge" style="color:var(--red);">DECLINE / REFER FOR REVIEW</div>
+      <div class="risk-pill" style="background:var(--red);">🔴 HIGH RISK</div>
+    </div>
+  </div>
+
+  <div class="panel kpi"><div class="label">Credit Score</div><div class="value v-red">250</div><div class="sub">Grade E3 · PD 100.0%</div></div><div class="panel kpi"><div class="label">Total Exposure</div><div class="value v-ink">105,022,180</div><div class="sub">LKR · of 116,167,579 granted</div></div><div class="panel kpi"><div class="label">Active Facilities</div><div class="value v-ink">20</div><div class="sub">2 creditor(s)</div></div><div class="panel kpi"><div class="label">Overdue Accounts</div><div class="value v-red">10</div><div class="sub">direct debtor</div></div><div class="panel kpi"><div class="label">Worst Delinquency</div><div class="value v-red">830d</div><div class="sub">direct debtor a/c</div></div><div class="panel kpi"><div class="label">Recent Inquiries</div><div class="value v-amber">8</div><div class="sub">last 6 months</div></div>
+
+  <div class="panel chart-panel">
+    <div class="panel-title">Payment Behavior — Score Trend</div>
+    <div class="bars"><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Feb24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Mar24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Apr24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">May24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Jun24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Jul24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Aug24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Sep24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Oct24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Nov24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Dec24</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Jan25</div></div><div class="bar-col"><div class="bar-score">250</div><div class="bar bar-d1" style="height:20%"></div><div class="bar-label">Feb25</div></div></div>
+    <div class="legend"><div><span class="dot" style="background:var(--red)"></span>Grade D/E — Elevated Risk</div></div>
+    
+  </div>
+
+  <div class="panel exposure-panel">
+    <div class="panel-title">Exposure Breakdown — By Facility Type (Active, LKR)</div>
+    <div class="exp-row"><div class="exp-label"><span>LOAN (×6)</span><b>92,606,817 (88.2%)</b></div><div class="exp-bar-bg"><div class="exp-bar-fill" style="width:88.2%;background:var(--navy);"></div></div></div><div class="exp-row"><div class="exp-label"><span>FACT (×2)</span><b>10,332,100 (9.8%)</b></div><div class="exp-bar-bg"><div class="exp-bar-fill" style="width:9.8%;background:var(--amber);"></div></div></div><div class="exp-row"><div class="exp-label"><span>LEAS (×6)</span><b>2,082,663 (2.0%)</b></div><div class="exp-bar-bg"><div class="exp-bar-fill" style="width:2.0%;background:var(--green);"></div></div></div><div class="exp-row"><div class="exp-label"><span>OVDR (×6)</span><b>600 (0.0%)</b></div><div class="exp-bar-bg"><div class="exp-bar-fill" style="width:0.0%;background:#7a5c9e;"></div></div></div>
+    <div class="exp-by-sector"><div class="sector-row"><span>By Institution Type — LCB</span><b>94,690,080 (90.2%)</b></div><div class="sector-row"><span>By Institution Type — LFC</span><b>10,332,100 (9.8%)</b></div></div>
+  </div>
+
+  <div class="panel table-panel">
+    <div class="panel-title">Facility Table — Active, Settled &amp; Written-Off</div>
+    <table>
+      <tr><th>Institution</th><th>Type</th><th>Granted (LKR)</th><th>Outstanding (LKR)</th><th>Status</th></tr>
+      <tr><td>-</td><td>OVDR</td><td>0</td><td>600</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LOAN</td><td>2,000,000</td><td>2,000,000</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LOAN</td><td>1,000,000</td><td>1,000,000</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LOAN</td><td>30,476,915</td><td>28,743,169</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>7010</td><td>LOAN</td><td>4,375,000</td><td>3,911,922</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>7010</td><td>LOAN</td><td>38,985,000</td><td>54,212,240</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>7010</td><td>LOAN</td><td>7,500,000</td><td>2,739,486</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,448,811</td><td>362,202</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,448,811</td><td>362,202</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,690,280</td><td>422,570</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,207,343</td><td>301,835</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,328,076</td><td>332,019</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,207,343</td><td>301,835</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>FACT</td><td>3,500,000</td><td>354,205</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>FACT</td><td>20,000,000</td><td>9,977,895</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>FACT (Guarantor)</td><td>35,000,000</td><td>10,379,039</td><td><span class="pill pill-active">ACTIVE</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,086,608</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>42,110,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>399,398</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>4,855,096</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>2,459,540</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>1,177,160</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>1,229,770</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>980,967</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>126,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>1,762,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>171,300</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>531,400</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>405,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>2,684,740</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>2,684,740</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>2,684,740</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>10,000,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>18,600,000</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>2,684,740</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>2,684,740</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>3,323,964</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,207,343</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,690,280</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LOAN</td><td>4,748,192</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,931,748</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>OVDR</td><td>0</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr><tr><td>-</td><td>LEAS</td><td>1,448,811</td><td>0</td><td><span class="pill pill-settled">SETTLED</span></td></tr>
+    </table>
+  </div>
+
+  <div class="panel flags-panel">
+    <div class="panel-title">Red Flags</div>
+    <ul class="flags red"><li>10 of 20 active facility(ies) currently in arrears (total 25,681,185).</li><li>4 credit inquiries in the last 3 months -- possible new borrowing in progress.</li><li>155 dishonoured cheque(s) on file, totalling 19,074,950 (worsening (more dishonoured cheques in the last 6 months than the preceding 6 months)).</li></ul>
+  </div>
+  <div class="panel flags-panel">
+    <div class="panel-title">Positive Factors</div>
+    <ul class="flags good"><li>Score stable at 250 (grade E3) for the last 3 reported months.</li><li>14-year credit file (earliest facility Jan-2011).</li></ul>
+  </div>
+
+  <div class="panel reco-panel">
+    <div class="panel-title">Recommendation</div>
+    <p>The automated checks below raised one or more high-severity items (write-off, guarantor default, or severe arrears). Recommend declining, or referring to a senior credit officer for manual review, before proceeding.</p>
+    <ul class="checklist"><li>Obtain a written repayment / regularisation plan for the facility(ies) in arrears.</li><li>Confirm whether any new facility/guarantee has been taken out since the most recent inquiry.</li><li>Price for the assessed grade (E3, PD 100.0%) rather than best-tier pricing.</li><li>Decision deadline / requested facility amount: confirm with the applicant (not present in the CRIB report).</li></ul>
+  </div>
+
+  <div class="panel signoff-panel">
+    <div class="field">Analyst<div class="line">Name / Date</div></div>
+    <div class="field">Approver<div class="line">Name / Date</div></div>
+  </div>
+
+  <div class="footnote">Source: CRIB Corporate Credit Report Plus. Decision badge and
+  flags below are generated by automated, rule-based checks -- not a credit decision. A human analyst should review the
+  underlying facility data (or the --json export of this tool) before approving.</div>
+
+</div>
+</div>
+</body>
+</html>

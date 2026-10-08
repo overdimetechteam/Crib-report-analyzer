@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+config.json
+config.txt
+
+.env
+.venv/
+
+.claude/
